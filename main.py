@@ -101,9 +101,7 @@ if st.button("Proceed"):
         try:
             # Check if folder path exists
             st.write(f"Input folder path: {folder_path}")
-            if not os.path.exists(folder_path):
-                st.error("The input folder path does not exist. Please check the path.")
-                continue
+            
 
             # Attempt to read the Excel file
             st.session_state.excel_data = pd.read_excel(excel_file)
@@ -280,9 +278,7 @@ if st.button("Proceed"):
                 
                 # Check if PDF file exists
                 st.write(f"Looking for file: {pdf_path}")
-                if not os.path.exists(pdf_path):
-                    st.error(f"PDF file for {part_number} does not exist in the input folder.")
-                    continue
+              
 
                 intermediate_pdf = pdf_path
                 for index, row in group.iterrows():
