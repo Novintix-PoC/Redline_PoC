@@ -103,7 +103,7 @@ if st.button("Proceed"):
             st.write(f"Input folder path: {folder_path}")
             if not os.path.exists(folder_path):
                 st.error("The input folder path does not exist. Please check the path.")
-                return
+                continue
 
             # Attempt to read the Excel file
             st.session_state.excel_data = pd.read_excel(excel_file)
