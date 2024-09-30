@@ -274,7 +274,7 @@ if st.button("Proceed"):
 
             # Process the grouped data
             for part_number, group in grouped_data:
-                pdf_path = os.path.join(folder_path, f"{part_number}.pdf")
+                 pdf_path = os.path.join(folder_path, part_number + ".pdf")
                 
                 # Check if PDF file exists
                 st.write(f"Looking for file: {pdf_path}")
