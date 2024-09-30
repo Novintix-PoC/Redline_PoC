@@ -99,13 +99,13 @@ if st.button("Proceed"):
     if excel_file and folder_path and output_folder:
         # Attempt to read the Excel file
         try:
-            st.session_state.excel_data = pd.read_excel(excel_file)
+            # st.session_state.excel_data = pd.read_excel(excel_file)
             st.session_state.folder_path = folder_path
             st.session_state.output_folder = output_folder
             st.session_state.img_file = img_file
             
             # Process the uploaded data
-            excel_data = st.session_state.excel_data
+            excel_data = pd.read_excel(excel_file)
             excel_data = excel_data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             sorted_df = excel_data.sort_values(by=excel_data.columns[0])  # Sort by the first column
             grouped_data = excel_data.groupby('Part_Number')
