@@ -98,24 +98,17 @@ output_folder = st.text_input("Output Folder Path", st.session_state.output_fold
 
 if st.button("Proceed"):
     if excel_file and folder_path and output_folder:
+        # Attempt to read the Excel file
         try:
-            # Check if folder path exists
-            st.write(f"Input folder path: {folder_path}")
-            
-
-            # Attempt to read the Excel file
             st.session_state.excel_data = pd.read_excel(excel_file)
             st.session_state.folder_path = folder_path
             st.session_state.output_folder = output_folder
             st.session_state.img_file = img_file
-
-            # Debugging Excel data
-            st.write(f"Columns in Excel: {st.session_state.excel_data.columns}")
-            st.write(f"Sample data: {st.session_state.excel_data.head()}")
-
+            
             # Process the uploaded data
             excel_data = st.session_state.excel_data
             excel_data = excel_data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+            sorted_df = excel_data.sort_values(by=excel_data.columns[0])  # Sort by the first column
             grouped_data = excel_data.groupby('Part_Number')
             st.session_state.process_complete = True  # Reset processing status
 
@@ -274,45 +267,44 @@ if st.button("Proceed"):
 
             # Process the grouped data
             for part_number, group in grouped_data:
-                pdf_path = os.path.join(folder_path, f"\{part_number}.pdf")
+                pdf_path = os.path.join(folder_path, f"{part_number}.pdf")
+                check_path = os.path.exists(pdf_path)
                 
-                # Check if PDF file exists
-                st.write(f"Looking for file: {pdf_path}")
-              
+                if check_path:
 
-                intermediate_pdf = pdf_path
-                for index, row in group.iterrows():
-                    clean_copy = row['Clean_copy']
-                    redline_copy = row['Redline_copy']
-                    category = row['Category']
+                    intermediate_pdf = pdf_path
+                    for index, row in group.iterrows():
+                        clean_copy = row['Clean_copy']
+                        redline_copy = row['Redline_copy']
+                        category = row['Category']
 
-                    if category == 'Overwrite':
-                        intermediate_pdf = overwrite(intermediate_pdf, clean_copy, redline_copy)
-                    elif category == 'Notes':
-                        intermediate_pdf = notes_addition(intermediate_pdf, clean_copy, redline_copy)
-                    elif category == 'CM':
-                        intermediate_pdf = cm_operation(intermediate_pdf)
-                        if intermediate_pdf is None:
-                            break  # Stop processing if CM fails
-                    else:
-                        st.warning(f"Unknown category '{category}' for part {part_number}. No action taken.")
+                        if category == 'Overwrite':
+                            intermediate_pdf = overwrite(intermediate_pdf, clean_copy, redline_copy)
+                        elif category == 'Notes':
+                            intermediate_pdf = notes_addition(intermediate_pdf, clean_copy, redline_copy)
+                        elif category == 'CM':
+                            intermediate_pdf = cm_operation(intermediate_pdf)
+                            if intermediate_pdf is None:
+                                break  # Stop processing if CM fails
+                        else:
+                            st.warning(f"Unknown category '{category}' for part {part_number}. No action taken.")
 
-                # Increment the revision after processing
-                temp_pdf_path = os.path.join(output_folder, f"temp_{part_number}.pdf")
-                rev_replace(intermediate_pdf, temp_pdf_path)
-                final_pdf_path = os.path.join(output_folder, f"{part_number}__redline.pdf")
-                os.replace(temp_pdf_path, final_pdf_path)  # Replace temp with final
+                    # Increment the revision after processing
+                    temp_pdf_path = os.path.join(output_folder, f"temp_{part_number}.pdf")
+                    rev_replace(intermediate_pdf, temp_pdf_path)
+                    final_pdf_path = os.path.join(output_folder, f"{part_number}__redline.pdf")
+                    os.replace(temp_pdf_path, final_pdf_path)  # Replace temp with final
 
-            # Cleanup: Remove all files except those ending with '_redline.pdf'
-            for filename in os.listdir(output_folder):
-                if not filename.endswith('_redline.pdf'):
-                    file_path = os.path.join(output_folder, filename)
-                    try:
-                        os.remove(file_path)
-                    except Exception as e:
-                        st.warning(f"Could not delete file {file_path}: {e}")
+                # Cleanup: Remove all files except those ending with '_redline.pdf'
+                for filename in os.listdir(output_folder):
+                    if not filename.endswith('_redline.pdf'):
+                        file_path = os.path.join(output_folder, filename)
+                        try:
+                            os.remove(file_path)
+                        except Exception as e:
+                            st.warning(f"Could not delete file {file_path}: {e}")
 
-            st.session_state.process_complete = True  # Mark process as complete
+                st.session_state.process_complete = True  # Mark process as complete
 
         except Exception as e:
             st.error(f"Error reading the Excel file: {e}")
