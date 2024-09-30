@@ -9,15 +9,7 @@ from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer, LTChar
 import fontstyle
 
-# Initialize session state if not already done
-if 'excel_data' not in st.session_state:
-    st.session_state.excel_data = None
-if 'folder_path' not in st.session_state:
-    st.session_state.folder_path = ""
-if 'output_folder' not in st.session_state:
-    st.session_state.output_folder = ""
-if 'img_file' not in st.session_state:
-    st.session_state.img_file = None
+
 if 'process_complete' not in st.session_state:
     st.session_state.process_complete = False  # To track processing status
 
@@ -84,7 +76,7 @@ with st.container():
 
 
 #st.subheader("Input Folder Path")
-folder_path = st.text_input("Input Folder Path", st.session_state.folder_path)
+folder_path = st.text_input("Input Folder Path")
 
 #st.subheader("Upload Excel File")
 excel_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
@@ -93,20 +85,17 @@ excel_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
 img_file = st.file_uploader("Upload Image (if required)", type=["png", "jpg", "jpeg"])
 
 #st.subheader("Output Folder Path")
-output_folder = st.text_input("Output Folder Path", st.session_state.output_folder)
+output_folder = st.text_input("Output Folder Path")
 
 
 if st.button("Proceed"):
     if excel_file and folder_path and output_folder:
         # Attempt to read the Excel file
         try:
-            st.session_state.excel_data = pd.read_excel(excel_file)
-            st.session_state.folder_path = folder_path
-            st.session_state.output_folder = output_folder
-            st.session_state.img_file = img_file
+            
             
             # Process the uploaded data
-            excel_data = st.session_state.excel_data
+            excel_data = pd.read_excel(excel_file)
             excel_data = excel_data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             sorted_df = excel_data.sort_values(by=excel_data.columns[0])  # Sort by the first column
             grouped_data = excel_data.groupby('Part_Number')
