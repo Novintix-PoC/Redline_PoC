@@ -98,17 +98,26 @@ output_folder = st.text_input("Output Folder Path", st.session_state.output_fold
 
 if st.button("Proceed"):
     if excel_file and folder_path and output_folder:
-        # Attempt to read the Excel file
         try:
+            # Check if folder path exists
+            st.write(f"Input folder path: {folder_path}")
+            if not os.path.exists(folder_path):
+                st.error("The input folder path does not exist. Please check the path.")
+                return
+
+            # Attempt to read the Excel file
             st.session_state.excel_data = pd.read_excel(excel_file)
             st.session_state.folder_path = folder_path
             st.session_state.output_folder = output_folder
             st.session_state.img_file = img_file
-            
+
+            # Debugging Excel data
+            st.write(f"Columns in Excel: {st.session_state.excel_data.columns}")
+            st.write(f"Sample data: {st.session_state.excel_data.head()}")
+
             # Process the uploaded data
             excel_data = st.session_state.excel_data
             excel_data = excel_data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-            sorted_df = excel_data.sort_values(by=excel_data.columns[0])  # Sort by the first column
             grouped_data = excel_data.groupby('Part_Number')
             st.session_state.process_complete = True  # Reset processing status
 
@@ -268,6 +277,9 @@ if st.button("Proceed"):
             # Process the grouped data
             for part_number, group in grouped_data:
                 pdf_path = os.path.join(folder_path, f"{part_number}.pdf")
+                
+                # Check if PDF file exists
+                st.write(f"Looking for file: {pdf_path}")
                 if not os.path.exists(pdf_path):
                     st.error(f"PDF file for {part_number} does not exist in the input folder.")
                     continue
