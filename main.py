@@ -267,9 +267,9 @@ if st.button("Proceed"):
             # Process the grouped data
             for part_number, group in grouped_data:
                 pdf_path = os.path.join(folder_path, f"{part_number}.pdf")
-                if not os.path.exists(pdf_path):
-                    st.error(f"PDF file for {part_number} does not exist in the input folder.")
-                    continue
+                # if not os.path.exists(pdf_path):
+                #     st.error(f"PDF file for {part_number} does not exist in the input folder.")
+                #     continue
 
                 intermediate_pdf = pdf_path
                 for index, row in group.iterrows():
