@@ -10,14 +10,7 @@ from pdfminer.layout import LTTextContainer, LTChar
 import fontstyle
 
 # Initialize session state if not already done
-if 'excel_data' not in st.session_state:
-    st.session_state.excel_data = None
-if 'folder_path' not in st.session_state:
-    st.session_state.folder_path = ""
-if 'output_folder' not in st.session_state:
-    st.session_state.output_folder = ""
-if 'img_file' not in st.session_state:
-    st.session_state.img_file = None
+
 if 'process_complete' not in st.session_state:
     st.session_state.process_complete = False  # To track processing status
 
@@ -27,12 +20,12 @@ st.markdown("""
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
     
         .stApp {
-            background: linear-gradient(to top, #0e4166 70%, #000000 95%);
+            background: #0e4166;
             font-family: 'Roboto', sans-serif;
         }
 
         [data-testid=stHeader] {
-            background: linear-gradient( #0e4166 10%, #000000 100%); #for header
+            background: #0e4166; #for header
         }
 
         [data-testid=stFileUploaderDropzone],[data-baseweb=base-input] {
@@ -46,16 +39,16 @@ st.markdown("""
         [data-testid="stBaseButton-secondary"]{
             color:#f4a303;
         }
-
-
+        
         .title-container {
-            background: rgba(14, 65, 102,0.8);
+            background: rgb(0,48,73);
             backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 10px;
             
             box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
         }
+        
         .title {
             color: #f4a303;
             font-size: 36px;
@@ -63,10 +56,10 @@ st.markdown("""
             text-align: center;
             
         }
-    
-        
+     
         
     <style>""", unsafe_allow_html=True)
+
 # Main page with buttons
 with st.container():
         col = st.columns((1, 3, 1))
@@ -83,41 +76,41 @@ with st.container():
             st.write("")
 
 
-#st.subheader("Input Folder Path")
-folder_path = st.text_input("Input Folder Path", st.session_state.folder_path or "input_folder")
-
-if not os.path.exists(folder_path):
-    st.error(f"Input folder '{folder_path}' does not exist.")
-
-#st.subheader("Upload Excel File")
+# File Input Section
+folder_path = st.text_input("Input Folder Path")
 excel_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
-
-#st.subheader("Upload Image for Conformity Marking Operation")
 img_file = st.file_uploader("Upload Image (if required)", type=["png", "jpg", "jpeg"])
+output_folder = st.text_input("Output Folder Path")
 
-#st.subheader("Output Folder Path")
-output_folder = st.text_input("Output Folder Path", st.session_state.output_folder or "output")
+# Function to check for existing files
+def check_files(folder, excel, output):
+    if not folder or not os.path.exists(folder):
+        st.error("The input folder path is invalid.")
+        return False
+    if not output or not os.path.exists(output):
+        st.error("The output folder path is invalid.")
+        return False
+    if not excel:
+        st.error("No Excel file uploaded.")
+        return False
+    return True
 
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
+# Error Handling for Excel Read Operation
+def read_excel_file(file):
+    try:
+        data = pd.read_excel(file)
+        st.session_state.excel_data = data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+        return True
+    except Exception as e:
+        st.error(f"Failed to read the Excel file: {str(e)}")
+        return False
+
 
 if st.button("Proceed"):
-    if excel_file and folder_path and output_folder:
-        # Attempt to read the Excel file
+    if check_files(folder_path, excel_file, output_folder) and read_excel_file(excel_file):
         try:
-            st.session_state.excel_data = pd.read_excel(excel_file)
-            st.session_state.folder_path = folder_path
-            st.session_state.output_folder = output_folder
-            st.session_state.img_file = img_file
-            
-            # Process the uploaded data
             excel_data = st.session_state.excel_data
-            excel_data = excel_data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-            sorted_df = excel_data.sort_values(by=excel_data.columns[0])  # Sort by the first column
             grouped_data = excel_data.groupby('Part_Number')
-            st.session_state.process_complete = True  # Reset processing status
-
-            # Define all the functions for processing as done in the original code
 
             # Function for Overwrite Operation
             def overwrite(pdf_path, clean_copy, redline_copy):
@@ -270,19 +263,21 @@ if st.button("Proceed"):
                 document.save(output_path)
                 document.close()
 
-            # Process the grouped data
             for part_number, group in grouped_data:
                 pdf_path = os.path.join(folder_path, f"{part_number}.pdf")
+                
                 if not os.path.exists(pdf_path):
-                    st.error(f"PDF file for {part_number} does not exist in the input folder.")
+                    st.warning(f"PDF file for {part_number} not found in input folder.")
                     continue
 
+                # Process the PDF for each part
                 intermediate_pdf = pdf_path
-                for index, row in group.iterrows():
+                for _, row in group.iterrows():
                     clean_copy = row['Clean_copy']
                     redline_copy = row['Redline_copy']
                     category = row['Category']
 
+                    # Call appropriate functions for Overwrite, Notes, CM, etc.
                     if category == 'Overwrite':
                         intermediate_pdf = overwrite(intermediate_pdf, clean_copy, redline_copy)
                     elif category == 'Notes':
@@ -290,9 +285,12 @@ if st.button("Proceed"):
                     elif category == 'CM':
                         intermediate_pdf = cm_operation(intermediate_pdf)
                         if intermediate_pdf is None:
-                            break  # Stop processing if CM fails
-                    else:
-                        st.warning(f"Unknown category '{category}' for part {part_number}. No action taken.")
+                            break
+
+                # Final processing after tasks (revision increment, cleanup)
+                final_pdf_path = os.path.join(output_folder, f"{part_number}_redline.pdf")
+                rev_replace(intermediate_pdf, final_pdf_path)
+            
 
                 # Increment the revision after processing
                 temp_pdf_path = os.path.join(output_folder, f"temp_{part_number}.pdf")
