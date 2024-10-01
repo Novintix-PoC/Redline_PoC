@@ -107,7 +107,7 @@ if st.button("Proceed"):
             
             # Process the uploaded data
             excel_data = st.session_state.excel_data
-            excel_data = excel_data.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+            excel_data = excel_data.map(lambda x: x.strip() if isinstance(x, str) else x)
             sorted_df = excel_data.sort_values(by=excel_data.columns[0])  # Sort by the first column
             grouped_data = excel_data.groupby('Part_Number')
             st.session_state.process_complete = True  # Reset processing status
@@ -267,17 +267,22 @@ if st.button("Proceed"):
 
             # Process the grouped data
             for part_number, group in grouped_data:
+               
+
                 pdf_path = os.path.join(folder_path, f"{part_number}.pdf")
                 if not os.path.exists(pdf_path):
                     st.error(f"PDF file for {part_number} does not exist in the input folder.")
                     continue
-
+                    
                 intermediate_pdf = pdf_path
+                    
                 for index, row in group.iterrows():
+                    part_number = row['Part_Number']
                     clean_copy = row['Clean_copy']
                     redline_copy = row['Redline_copy']
                     category = row['Category']
 
+                    
                     if category == 'Overwrite':
                         intermediate_pdf = overwrite(intermediate_pdf, clean_copy, redline_copy)
                     elif category == 'Notes':
