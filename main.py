@@ -9,7 +9,17 @@ from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer, LTChar
 import fontstyle
 
-
+# Initialize session state if not already done
+if 'excel_data' not in st.session_state:
+    st.session_state.excel_data = None
+if 'folder_path' not in st.session_state:
+    st.session_state.folder_path = ""
+if 'output_folder' not in st.session_state:
+    st.session_state.output_folder = ""
+if 'img_file' not in st.session_state:
+    st.session_state.img_file = None
+if 'process_complete' not in st.session_state:
+    st.session_state.process_complete = False  # To track processing status
 
 
 st.markdown("""
