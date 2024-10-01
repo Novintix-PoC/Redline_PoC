@@ -84,7 +84,10 @@ with st.container():
 
 
 #st.subheader("Input Folder Path")
-folder_path = st.text_input("Input Folder Path", st.session_state.folder_path)
+folder_path = st.text_input("Input Folder Path", st.session_state.folder_path or "input_folder")
+
+if not os.path.exists(folder_path):
+    st.error(f"Input folder '{folder_path}' does not exist.")
 
 #st.subheader("Upload Excel File")
 excel_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
@@ -93,8 +96,10 @@ excel_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
 img_file = st.file_uploader("Upload Image (if required)", type=["png", "jpg", "jpeg"])
 
 #st.subheader("Output Folder Path")
-output_folder = st.text_input("Output Folder Path", st.session_state.output_folder)
+output_folder = st.text_input("Output Folder Path", st.session_state.output_folder or "output")
 
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
 if st.button("Proceed"):
     if excel_file and folder_path and output_folder:
