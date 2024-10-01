@@ -14,8 +14,7 @@ if 'excel_data' not in st.session_state:
     st.session_state.excel_data = None
 if 'folder_path' not in st.session_state:
     st.session_state.folder_path = ""
-if 'output_folder' not in st.session_state:
-    st.session_state.output_folder = ""
+
 if 'img_file' not in st.session_state:
     st.session_state.img_file = None
 if 'process_complete' not in st.session_state:
@@ -93,7 +92,7 @@ excel_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
 img_file = st.file_uploader("Upload Image (if required)", type=["png", "jpg", "jpeg"])
 
 #st.subheader("Output Folder Path")
-output_folder = st.text_input("Output Folder Path", st.session_state.output_folder)
+output_folder = st.text_input("Output Folder Path")
 
 
 if st.button("Proceed"):
@@ -102,7 +101,7 @@ if st.button("Proceed"):
         try:
             st.session_state.excel_data = pd.read_excel(excel_file)
             st.session_state.folder_path = folder_path
-            st.session_state.output_folder = output_folder
+            
             st.session_state.img_file = img_file
             
             # Process the uploaded data
