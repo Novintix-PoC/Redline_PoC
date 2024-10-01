@@ -14,7 +14,8 @@ if 'excel_data' not in st.session_state:
     st.session_state.excel_data = None
 if 'folder_path' not in st.session_state:
     st.session_state.folder_path = ""
-
+if 'output_folder' not in st.session_state:
+    st.session_state.output_folder = ""
 if 'img_file' not in st.session_state:
     st.session_state.img_file = None
 if 'process_complete' not in st.session_state:
@@ -26,12 +27,12 @@ st.markdown("""
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
     
         .stApp {
-            background: #0e4166;
+            background: linear-gradient(to top, #0e4166 70%, #000000 95%);
             font-family: 'Roboto', sans-serif;
         }
 
         [data-testid=stHeader] {
-            background: #0e4166; #for header
+            background: linear-gradient( #0e4166 10%, #000000 100%); #for header
         }
 
         [data-testid=stFileUploaderDropzone],[data-baseweb=base-input] {
@@ -45,16 +46,16 @@ st.markdown("""
         [data-testid="stBaseButton-secondary"]{
             color:#f4a303;
         }
-        
+
+
         .title-container {
-            background: rgb(0,48,73);
+            background: rgba(14, 65, 102,0.8);
             backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 10px;
             
             box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
         .title {
             color: #f4a303;
             font-size: 36px;
@@ -62,10 +63,10 @@ st.markdown("""
             text-align: center;
             
         }
-     
+    
+        
         
     <style>""", unsafe_allow_html=True)
-
 # Main page with buttons
 with st.container():
         col = st.columns((1, 3, 1))
@@ -92,7 +93,7 @@ excel_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
 img_file = st.file_uploader("Upload Image (if required)", type=["png", "jpg", "jpeg"])
 
 #st.subheader("Output Folder Path")
-output_folder = st.text_input("Output Folder Path")
+output_folder = st.text_input("Output Folder Path", st.session_state.output_folder)
 
 
 if st.button("Proceed"):
@@ -101,7 +102,7 @@ if st.button("Proceed"):
         try:
             st.session_state.excel_data = pd.read_excel(excel_file)
             st.session_state.folder_path = folder_path
-            
+            st.session_state.output_folder = output_folder
             st.session_state.img_file = img_file
             
             # Process the uploaded data
@@ -267,14 +268,12 @@ if st.button("Proceed"):
             # Process the grouped data
             for part_number, group in grouped_data:
                 pdf_path = os.path.join(folder_path, f"{part_number}.pdf")
+                if not os.path.exists(pdf_path):
+                    st.error(f"PDF file for {part_number} does not exist in the input folder.")
+                    continue
+
                 intermediate_pdf = pdf_path
                 for index, row in group.iterrows():
-                    
-                    if not os.path.exists(pdf_path):
-                        st.error(f"PDF file for {part_number} does not exist in the input folder.")
-                        continue
-
-                    
                     clean_copy = row['Clean_copy']
                     redline_copy = row['Redline_copy']
                     category = row['Category']
