@@ -221,7 +221,7 @@ if st.button("Proceed"):
                             intermediate_pdf = overwrite(intermediate_pdf, clean_copy, redline_copy)
                         elif category == 'Notes':
                             intermediate_pdf = notes_addition(intermediate_pdf, clean_copy, redline_copy)
-                        elif category == 'Confimity Marking':
+                        elif category == 'Conformity Marking':
                             intermediate_pdf = cm_operation(intermediate_pdf)
                             if intermediate_pdf is None:
                                 break
