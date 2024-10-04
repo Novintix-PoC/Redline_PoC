@@ -68,9 +68,9 @@ with st.container():
             """, unsafe_allow_html=True)
 
 # File uploaders
-excel_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
-pdf_files = st.file_uploader("Upload PDF files", type=["pdf"], accept_multiple_files=True)
-img_file = st.file_uploader("Upload Image for Conformity Marking Operation (if required)", type=["png", "jpg", "jpeg"])
+excel_file = st.file_uploader("Upload the Input file", type=["xlsx"])
+pdf_files = st.file_uploader("Upload Affected files", type=["pdf"], accept_multiple_files=True)
+img_file = st.file_uploader("Upload Conformity Marking image (if required)", type=["png", "jpg", "jpeg"])
 
 # Create a temporary directory for output
 output_folder = tempfile.mkdtemp()
@@ -221,7 +221,7 @@ if st.button("Proceed"):
                             intermediate_pdf = overwrite(intermediate_pdf, clean_copy, redline_copy)
                         elif category == 'Notes':
                             intermediate_pdf = notes_addition(intermediate_pdf, clean_copy, redline_copy)
-                        elif category == 'CM':
+                        elif category == 'Confimity Marking':
                             intermediate_pdf = cm_operation(intermediate_pdf)
                             if intermediate_pdf is None:
                                 break
