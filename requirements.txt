@@ -1,6 +1,7 @@
-pymupdf
-pandas
-streamlit
-pdfminer.six
 fontstyle
+pandas
+pdfminer.six==20231228
+pymupdf==1.25.1
+streamlit
+cryptography==37.0.4
 openpyxl
